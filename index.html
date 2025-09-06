@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Fast Speech Transcriber</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px;
+    }
+    h1 {
+      color: #333;
+    }
+    .controls {
+      margin: 15px 0;
+    }
+    button {
+      margin: 0 5px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background-color: #0078d7;
+      color: white;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background-color: #005a9e;
+    }
+    #output {
+      width: 90%;
+      max-width: 700px;
+      min-height: 200px;
+      border: 1px solid #ccc;
+      background: white;
+      padding: 15px;
+      font-size: 18px;
+      line-height: 1.5;
+      border-radius: 8px;
+      margin-top: 20px;
+      white-space: pre-wrap;
+      overflow-y: auto;
+    }
+    .note {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎙️ Fast Speech Transcriber</h1>
+  <div class="controls">
+    <button onclick="startTranscription()">Start</button>
+    <button onclick="stopTranscription()">Stop</button>
+    <button onclick="copyText()">Copy</button>
+    <button onclick="clearText()">Delete</button>
+  </div>
+  <div id="output">Your transcription will appear here...</div>
+  <div class="note">
+    ⚠️ Note: This tool works best in <b>Google Chrome</b> or <b>Microsoft Edge</b>. 
+    It is not supported in Safari or Firefox.
+  </div>
+
+  <script>
+    let recognition;
+    let fullText = "";
+
+    function startTranscription() {
+      if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+        alert("Your browser does not support Speech Recognition. Please use Chrome or Edge.");
+        return;
+      }
+
+      recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.continuous = true;
+      recognition.interimResults = false; // 🚀 Only final results
+      recognition.lang = "en-US";
+
+      recognition.onresult = function(event) {
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            const transcript = event.results[i][0].transcript.trim();
+            fullText += transcript + " ";
+            document.getElementById("output").innerText = fullText;
+          }
+        }
+      };
+
+      recognition.onerror = function(event) {
+        console.error("Error occurred in recognition: ", event.error);
+      };
+
+      recognition.start();
+    }
+
+    function stopTranscription() {
+      if (recognition) recognition.stop();
+    }
+
+    function copyText() {
+      const text = document.getElementById("output").innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        alert("Text copied to clipboard!");
+      });
+    }
+
+    function clearText() {
+      fullText = "";
+      document.getElementById("output").innerText = "Your transcription will appear here...";
+    }
+  </script>
+</body>
+</html>
